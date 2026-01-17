@@ -8,9 +8,9 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 
 // Item Routes
-router.get('/items', itemController.getAllItems);
-router.post('/items/create', itemController.createItem);
-router.put('/items/update/:id', itemController.updateItemStatus);
-router.delete('/items/delete/:id', itemController.deleteItem);
+router.get('/items', itemController.getItems); 
+router.post('/items', itemController.createItem); 
+router.put('/items/:id', itemController.updateItem); 
+router.delete('/items/:id', itemController.deleteItem); 
 
 module.exports = router;

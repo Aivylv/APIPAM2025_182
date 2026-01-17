@@ -31,17 +31,19 @@ exports.getItems = async (req, res) => {
 
 // REQ-14 (Create)
 exports.createItem = async (req, res) => {
-    // PERBAIKAN: Gunakan 'condition' (sesuai Android), bukan 'condition_text'
-    const { item_name, condition, patient_id, user_id } = req.body; 
+    //Android akan mengirim 'photo' sebagai file, dan data lain sebagai text
+    const { item_name, condition, patient_id, user_id } = req.body;
+    const photo_path = req.file ? req.file.filename : null; 
 
-    if (!item_name || !user_id) {
+    if (!item_name || !user_id || !patient_id) {
         return res.status(400).json({ message: 'Data wajib tidak lengkap' });
     }
 
     try {
         await db.query(
-            'INSERT INTO items (item_name, `condition`, patient_id, user_id, status, entry_date) VALUES (?, ?, ?, ?, "Disimpan", NOW())',
-            [item_name, condition, patient_id, user_id]
+            //Tambahkan photo_path ke query
+            'INSERT INTO items (item_name, `condition`, patient_id, user_id, status, photo_path, entry_date) VALUES (?, ?, ?, ?, "Disimpan", ?, NOW())',
+            [item_name, condition, patient_id, user_id, photo_path]
         );
         res.status(201).json({ isSuccess: true, message: 'Data Barang Berhasil Disimpan' });
     } catch (err) {

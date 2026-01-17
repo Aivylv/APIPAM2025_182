@@ -1,18 +1,26 @@
-const verifyToken = (req, res, next) => {
-    // SRS REQ-334: Autentikasi Wajib
-    const bearerHeader = req.headers['authorization'];
-    if (typeof bearerHeader !== 'undefined') {
-        // Logika verifikasi token (JWT) seharusnya di sini
-        next();
-    } else {
-        res.sendStatus(403); // Forbidden jika tidak login
-    }
-};
-
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const itemController = require('../controllers/itemController');
+const patientController = require('../controllers/patientController');
+
+//Middleware JWT (REQ-334)
+const verifyToken = (req, res, next) => {
+    const bearerHeader = req.headers['authorization'];
+    if (typeof bearerHeader !== 'undefined') {
+        const token = bearerHeader.split(' ')[1];
+        jwt.verify(token, process.env.JWT_SECRET, (err, authData) => {
+            if (err) {
+                return res.status(403).json({ success: false, message: 'Token tidak valid' });
+            } else {
+                req.userData = authData;
+                next();
+            }
+        });
+    } else {
+        res.status(401).json({ success: false, message: 'Akses ditolak' });
+    }
+};
 
 //Auth Routes
 router.post('/register', authController.register);

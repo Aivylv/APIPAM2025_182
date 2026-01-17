@@ -1,11 +1,12 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const app = express();
 const apiRoutes = require('./src/routes/api');
 
-const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); //membaca data format Form-UrlEncoded (Retrofit)
 app.use('/api', apiRoutes);
 
-app.listen(3000, () => {
-    console.log('Server SafeGuard RSJ berjalan di port 3000');
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

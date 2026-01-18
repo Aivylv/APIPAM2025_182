@@ -1,12 +1,24 @@
 const db = require('../config/database');
 
-// REQ-6 (Read) & REQ-10 (Search)
+//REQ-6 (Read) & REQ-10 (Search)
 exports.getItems = async (req, res) => {
     try {
-        const { keyword } = req.query; // Baca parameter ?keyword= dari Android
-        
+        const { keyword } = req.query;
+
         let query = `
-            SELECT i.*, p.name as patient_name, p.rm_number, u.full_name as officer_name 
+            SELECT 
+                i.item_id, 
+                i.item_name, 
+                i.condition, 
+                i.status, 
+                i.photo_path, 
+                i.receiver,
+                i.user_id,
+                i.patient_id,
+                DATE_FORMAT(i.entry_date, '%d %b %Y, %H:%i') as entry_date, 
+                p.name as patient_name, 
+                p.rm_number, 
+                u.full_name as officer_name 
             FROM items i 
             LEFT JOIN patients p ON i.patient_id = p.patient_id 
             LEFT JOIN users u ON i.user_id = u.user_id 
@@ -14,22 +26,22 @@ exports.getItems = async (req, res) => {
         
         const params = [];
 
-        // Logika Pencarian (REQ-10)
         if (keyword) {
             query += ` WHERE i.item_name LIKE ? OR p.name LIKE ?`;
             params.push(`%${keyword}%`, `%${keyword}%`);
         }
 
-        query += ` ORDER BY i.entry_date DESC`;
+        query += ` ORDER BY i.entry_date DESC`; //urat dari yang terbaru
 
         const [rows] = await db.query(query, params);
         res.json(rows);
     } catch (err) {
+        console.error("GET DETAIL ERROR:", err);
         res.status(500).json({ message: err.message });
     }
 };
 
-// REQ-14 (Create)
+//REQ-14 (Create)
 exports.createItem = async (req, res) => {
     //Android akan mengirim 'photo' sebagai file, dan data lain sebagai text
     const { item_name, condition, patient_id, user_id } = req.body;
@@ -52,7 +64,7 @@ exports.createItem = async (req, res) => {
     }
 };
 
-// REQ-18 (Update)
+//REQ-18 (Update)
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
     const { item_name, condition, status, receiver } = req.body;
@@ -69,11 +81,12 @@ exports.updateItem = async (req, res) => {
 
         res.json({ isSuccess: true, message: 'Data barang berhasil diperbarui' });
     } catch (err) {
+        console.log("UPDATE ERROR:", err);
         res.status(500).json({ message: err.message });
     }
 };
 
-// REQ-20 (Delete)
+//REQ-20 (Delete)
 exports.deleteItem = async (req, res) => {
     const { id } = req.params;
     try {
@@ -89,7 +102,20 @@ exports.getItemById = async (req, res) => {
     const { id } = req.params;
     try {
         const query = `
-            SELECT i.*, p.name as patient_name, p.rm_number, u.full_name as officer_name 
+            SELECT 
+                i.item_id, 
+                i.item_name, 
+                i.condition, 
+                i.status, 
+                i.photo_path, 
+                i.receiver,
+                i.user_id,
+                i.patient_id,
+                DATE_FORMAT(i.entry_date, '%d %b %Y, %H:%i') as entry_date,
+                DATE_FORMAT(i.updated_at, '%d %b %Y, %H:%i') as return_date,
+                p.name as patient_name, 
+                p.rm_number, 
+                u.full_name as officer_name 
             FROM items i 
             LEFT JOIN patients p ON i.patient_id = p.patient_id 
             LEFT JOIN users u ON i.user_id = u.user_id 
@@ -103,6 +129,7 @@ exports.getItemById = async (req, res) => {
 
         res.json(rows[0]);
     } catch (err) {
+        console.error("GET DETAIL ERROR:", err);
         res.status(500).json({ message: err.message });
     }
 };

@@ -50,6 +50,8 @@ router.get('/items', itemController.getItems);
 router.post('/items', upload.single('photo'), itemController.createItem); 
 router.put('/items/:id', itemController.updateItem); 
 router.delete('/items/:id', itemController.deleteItem); 
+router.get('/items/:id', verifyToken, itemController.getItemById);
+
 //Patient Routes
 router.get('/patients', verifyToken, patientController.getPatients);
 router.post('/patients', verifyToken, patientController.createPatient);
